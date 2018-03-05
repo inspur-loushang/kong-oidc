@@ -15,8 +15,9 @@ end
 
 function OidcHandler:access(config)
   OidcHandler.super.access(self)
+  config = utils.adapt_multi_tenant(config,ngx)
   local oidcConfig = utils.get_options(config, ngx)
-
+  print(oidcConfigc)
   if filter.shouldProcessRequest(oidcConfig) then
     session.configure(config)
     handle(oidcConfig)
@@ -43,7 +44,6 @@ function handle(oidcConfig)
       ngx.req.set_header("X-Userinfo", cjson.encode(response.user))
     end
     if response and response.access_token then
-      ngx.log(ngx.ERR,cjson.encode(response.access_token))
       ngx.req.set_header("X-AccessToken", cjson.encode(response.access_token))
     end
   end

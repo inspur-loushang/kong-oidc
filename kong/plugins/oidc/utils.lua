@@ -53,6 +53,27 @@ function M.get_options(config, ngx)
   }
 end
 
+function M.adapt_multi_tenant(config, ngx)
+  local tmp_config = config
+  local uri = ngx.var.request_uri
+  local x = uri:find("?realm")
+  if x then
+    local c = uri:sub(x + 1)
+    local d = c:find("=")
+    local realm = c:sub(d + 1)
+    local introspection_endpoint = tmp_config.introspection_endpoint
+    local discovery = tmp_config.discovery
+    local mrealm = "realms/" .. realm .. "/"
+    local n_introspection_endpoint = string.gsub(introspection_endpoint, "realms/%w+/", mrealm)
+    local n_discovery = string.gsub(discovery, "realms/%w+/", mrealm)
+    tmp_config.introspection_endpoint = n_introspection_endpoint
+    tmp_config.discovery = n_discovery
+  else
+    return config
+  end
+  return tmp_config
+end
+
 function M.exit(httpStatusCode, message, ngxCode)
   ngx.status = httpStatusCode
   ngx.say(message)
